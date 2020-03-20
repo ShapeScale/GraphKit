@@ -11,7 +11,7 @@ import SwiftUI
 
 struct Line<T : ShapeStyle, U : ShapeStyle>: View {
     @State var points : [Double]
-    @State var geometry : GeometryProxy?
+    @State var geometry : GeometryProxy
     var style : LineGraphStyle<T, U>
     
     var path : CGMutablePath {
@@ -19,10 +19,10 @@ struct Line<T : ShapeStyle, U : ShapeStyle>: View {
         
         if self.style.curve == .continuous {
             
-            path.move(to: CGPoint(x: 0, y: self.getHeightValue(height: geometry!.size.height, point: self.points.first!)))
+            path.move(to: CGPoint(x: 0, y: self.getHeightValue(height: geometry.size.height, point: self.points.first!)))
             
             for index in 1..<self.points.count {
-                let newCoordinate = self.generateCoordinate(geometry: geometry!, index: index)
+                let newCoordinate = self.generateCoordinate(geometry: geometry, index: index)
                 path.addCurve(
                     to: newCoordinate,
                     control1: CGPoint(x: path.currentPoint.x + self.style.curveRadius, y: path.currentPoint.y),
@@ -32,10 +32,10 @@ struct Line<T : ShapeStyle, U : ShapeStyle>: View {
             
         } else {
             
-            path.move(to: CGPoint(x: 0, y: self.getHeightValue(height: geometry!.size.height, point: self.points.first!)))
+            path.move(to: CGPoint(x: 0, y: self.getHeightValue(height: geometry.size.height, point: self.points.first!)))
             
             for index in 1..<self.points.count {
-                path.addLine(to: self.generateCoordinate(geometry: geometry!, index: index))
+                path.addLine(to: self.generateCoordinate(geometry: geometry, index: index))
             }
         }
         
@@ -44,9 +44,9 @@ struct Line<T : ShapeStyle, U : ShapeStyle>: View {
     
     var closedPath : CGMutablePath {
         let path = self.path
-        path.addLine(to: CGPoint(x: CGFloat(self.points.count - 1) * self.getIntervalWidth(width: geometry!.size.width), y: geometry!.size.height) ) // Bottom  right corner
-        path.addLine(to: CGPoint(x: 0, y: geometry!.size.height) ) // Bottom left corner
-        path.addLine(to: self.generateCoordinate(geometry: geometry!, index: 0) ) // Return home
+        path.addLine(to: CGPoint(x: CGFloat(self.points.count - 1) * self.getIntervalWidth(width: geometry.size.width), y: geometry.size.height) ) // Bottom  right corner
+        path.addLine(to: CGPoint(x: 0, y: geometry.size.height) ) // Bottom left corner
+        path.addLine(to: self.generateCoordinate(geometry: geometry, index: 0) ) // Return home
         return path
     }
     
@@ -85,8 +85,10 @@ struct Line<T : ShapeStyle, U : ShapeStyle>: View {
 
 
 struct Line_Previews: PreviewProvider {
-    @State static var style = LineGraphStyle<Color, Color>()
+    @State static var style = LineGraphStyle<Color, LinearGradient>()
     static var previews: some View {
-        Line(points: [10, 9, 0, 6], style: style)
+        GeometryReader { geometry in
+            Line(points: [10, 9, 0, 6], geometry: geometry, style: style)
+        }
     }
 }
